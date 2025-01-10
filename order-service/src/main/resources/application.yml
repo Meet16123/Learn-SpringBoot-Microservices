@@ -1,0 +1,30 @@
+management:
+  health:
+    circuitbreakers:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+resilience4j:
+  retry:
+    instances:
+      inventoryRetry:
+        maxRetryAttempts: 3
+        waitDuration: 5s
+  ratelimter:
+    instances:
+      inventoryRateLimiter:
+        limitForPeriod: 1
+        limitRefreshPeriod: 5s
+        timeoutDuration: 10ms
+  circuitbreaker:
+    instances:
+      inventoryCircuitBreaker:
+        slidingWindowSize: 5
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+

@@ -6,6 +6,9 @@ import com.meet.ecom.order_service.entity.OrderItem;
 import com.meet.ecom.order_service.entity.OrderStatus;
 import com.meet.ecom.order_service.entity.Orders;
 import com.meet.ecom.order_service.repository.OrdersRepository;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.query.Order;
@@ -38,9 +41,13 @@ public class OrdersService {
         return modelMapper.map(order, OrderRequestDto.class);
     }
 
+    @Retry(name = "inventoryRetry", fallbackMethod = "createOrderFallback")
+    @CircuitBreaker(name = "inventoryCircuitBreaker", fallbackMethod = "createOrderFallback")
+    @RateLimiter(name = "inventoryRateLimiter", fallbackMethod = "createOrderFallback")
     public OrderRequestDto createOrder(OrderRequestDto orderRequestDto) {
         log.info("Creating order: {}", orderRequestDto);
         Double totalPrice = inventoryOpenFeignClient.reduceStocks(orderRequestDto);
+
         Orders order = modelMapper.map(orderRequestDto, Orders.class);
 
         for(OrderItem orderItem: order.getOrderItems()) {
@@ -48,7 +55,14 @@ public class OrdersService {
         }
         order.setTotalPrice(totalPrice);
         order.setOrderStatus(OrderStatus.CONFIRMED);
+
         Orders savedOrder = ordersRepository.save(order);
+
         return modelMapper.map(savedOrder, OrderRequestDto.class);
+    }
+
+    public OrderRequestDto createOrderFallback(OrderRequestDto orderRequestDto, Throwable throwable) {
+        log.error("Error occurred while creating order due to: {}", throwable.getMessage());
+        return new OrderRequestDto();
     }
 }
