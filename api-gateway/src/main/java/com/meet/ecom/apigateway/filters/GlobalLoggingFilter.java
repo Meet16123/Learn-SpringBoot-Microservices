@@ -17,8 +17,6 @@ public class GlobalLoggingFilter implements GlobalFilter {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
 
         log.info("Logging from PRE Global Filter: request -> {}", exchange.getRequest().getURI());
-        return chain.filter(exchange).then(Mono.fromRunnable(() -> {
-            log.info("Logging from POST Global Filter: response -> {}", exchange.getResponse().getStatusCode());
-        }));
+        return chain.filter(exchange).then(Mono.fromRunnable(() -> log.info("Logging from POST Global Filter: response -> {}", exchange.getResponse().getStatusCode())));
     }
 }

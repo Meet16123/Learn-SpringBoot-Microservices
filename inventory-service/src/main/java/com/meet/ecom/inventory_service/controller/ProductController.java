@@ -5,6 +5,8 @@ import com.meet.ecom.inventory_service.dto.OrderRequestDto;
 import com.meet.ecom.inventory_service.dto.ProductDto;
 import com.meet.ecom.inventory_service.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.hibernate.query.Order;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +15,7 @@ import org.springframework.web.client.RestClient;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/products")
 @RequiredArgsConstructor
@@ -45,5 +48,12 @@ public class ProductController {
     public ResponseEntity<Double> reduceStocks(@RequestBody OrderRequestDto orderRequestDto) {
         Double totalPrice = productService.reduceStock(orderRequestDto);
         return ResponseEntity.ok(totalPrice);
+    }
+
+
+    @PostMapping("/revert-stock")
+    public void revertInventory(@RequestParam("orderId") Long orderId) {
+        log.info("Reverting inventory for order: {}", orderId);
+        productService.revertInventory(orderId);
     }
 }

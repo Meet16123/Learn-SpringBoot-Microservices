@@ -1,3 +1,6 @@
+jwt:
+  secretKey: alkaloid98dkgjdaklvjdlfjdsjafdjklfjladsj98743fdkljfakl2937843flag
+
 spring:
   application:
     name: api-gateway
@@ -13,6 +16,7 @@ spring:
           filters:
             - StripPrefix=2
 
+
         - id: order-service
           uri: lb://order-service
           predicates:
@@ -20,7 +24,12 @@ spring:
           filters:
             - StripPrefix=2
 
-
+        - id: shipping-service
+          uri: lb://shipping-service
+          predicates:
+            - Path=/api/v1/shipping/**
+          filters:
+            - StripPrefix=2
 eureka:
   client:
     service-url:

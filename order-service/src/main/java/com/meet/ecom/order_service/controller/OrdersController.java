@@ -2,6 +2,7 @@ package com.meet.ecom.order_service.controller;
 
 import com.meet.ecom.order_service.clients.InventoryOpenFeignClient;
 import com.meet.ecom.order_service.dto.OrderRequestDto;
+import com.meet.ecom.order_service.dto.ShippingDto;
 import com.meet.ecom.order_service.entity.OrderItem;
 import com.meet.ecom.order_service.repository.OrdersRepository;
 import com.meet.ecom.order_service.service.OrdersService;
@@ -20,8 +21,8 @@ public class OrdersController {
     private final OrdersService ordersService;
 
     @GetMapping("/helloOrders")
-    public String helloOrders() {
-        return "Hello from Orders";
+    public String helloOrders(@RequestHeader("X-User-Id") Long userId) {
+        return "Hello from Orders Services, user id: " + userId;
     }
 
     @GetMapping("getAll")
@@ -45,4 +46,15 @@ public class OrdersController {
         return ResponseEntity.ok(order);
     }
 
+    @PostMapping("/cancel-order/{id}")
+    public ResponseEntity<OrderRequestDto> cancelOrder(@PathVariable Long id) {
+        OrderRequestDto order = ordersService.cancelOrder(id);
+        return ResponseEntity.ok(order);
+    }
+
+    @PostMapping("/confirm-shipping/{id}")
+    public ResponseEntity<ShippingDto> confirmShipping(@PathVariable Long id) {
+        ShippingDto shipping = ordersService.confirmShipping(id);
+        return ResponseEntity.ok(shipping);
+    }
 }
